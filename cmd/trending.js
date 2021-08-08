@@ -15,15 +15,21 @@ puppeteer.launch({ headless: true }).then(async browser => {
 
   await page.goto('https://github.com/trending/go?since=daily')
 
-  const repositoriesName = await page.$$eval(".Box-row > .lh-condensed > a", item => item.map(e => e.text))
-  const repositoriesOverview = await page.$$eval(".Box-row > p", item => item.map(e => e.innerHTML))
+  const name = await page.$$eval(".Box-row > .lh-condensed > a", item => item.map(e => e.text))
+  const overview = await page.$$eval(".Box-row > p", item => item.map(e => e.innerHTML))
+  const cumulativeStar = await page.$$eval(".Box-row > .f6 > span + a", item => item.map(e => e.text))
+  const fork = await page.$$eval(".Box-row > .f6 > span + a + a", item => item.map(e => e.text))
+  const star = await page.$$eval(".Box-row > .f6 > .float-sm-right", item => item.map(e => e.innerHTML))
 
   await browser.close()
 
-  for(let i = 0; i < 24; i++) {
+  for(let i = 0; i < 25; i++) {
     repositoriesList.push({
-      "name": repositoriesName[i].replace(/[ ]|[\r\n]/g,""),
-      "overview": repositoriesOverview[i].replace(/<[^>]+>|[\r\n]/g,"").trim()
+      "name": name[i].replace(/[ ]|[\r\n]/g,""),
+      "overview": overview[i].replace(/<[^>]+>|[\r\n]/g,"").trim(),
+      "cumulativeStar": +cumulativeStar[i].replace(/[^\d.]/g,""),
+      "star": +star[i].replace(/<[^>]+>|[\r\n]|[^\d.]/g,""),
+      "fork": +fork[i].replace(/[^\d.]/g,""),
     })
   }
 
