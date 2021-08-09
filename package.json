@@ -13,7 +13,7 @@
     "cz-conventional-changelog": "^3.3.0"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "fetch": "^1.1.0",
     "puppeteer": "^10.2.0"
   }
 }
