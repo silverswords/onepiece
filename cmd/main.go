@@ -1,18 +1,17 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 
 	"github.com/gin-gonic/gin"
-	influxdb "github.com/influxdata/influxdb-client-go/v2"
+	_ "github.com/lib/pq"
 	"github.com/silverswords/onepiece/pkg/register"
 	trendingV1 "github.com/silverswords/onepiece/pkg/trending/controller/v1"
 )
 
 const (
-	influxAddr  = "http://localhost:8086"
-	influxToken = "EFm9R2pGsgh1E7JHHBAnCsxp1EcjyepOytj1PUqyMkKqByulwAxfKfbvIRM0IOg-dg_SyNeODPcqugCTB48fQw=="
-	version     = 1
+	version = 1
 
 	listenAddr = "0.0.0.0:8080"
 )
@@ -22,15 +21,16 @@ const (
 )
 
 func main() {
-	client := influxdb.NewClient(influxAddr, influxToken)
-	defer client.Close()
+	db, err := sql.Open("postgres", "host=192.168.0.251 port=5432 user=root password=123456 dbname=postgres sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	engine := gin.Default()
 
-	register.Register(1, trendingServiceName, trendingV1.New(client))
+	register.Register(1, trendingServiceName, trendingV1.New(db))
 
-	err := register.Init(version, engine)
-	if err != nil {
+	if err := register.Init(version, engine); err != nil {
 		log.Fatal(err)
 	}
 
