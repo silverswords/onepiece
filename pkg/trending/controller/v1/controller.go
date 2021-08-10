@@ -63,13 +63,29 @@ func (c *Controller) saveDaily(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
 		return
 	}
+	defer tx.Rollback()
 
 	for _, project := range req.DailyData {
 		id, err := model.TxSelectRepoIDByName(tx, project.Name)
 		if err != nil {
-			log.Printf("[trending] save daily, select repo id error: %s\n", err)
-			ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
-			return
+			if err != sql.ErrNoRows {
+				log.Printf("[trending] save daily, select repo id error: %s\n", err)
+				ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
+				return
+			}
+
+			if err := model.TxInsertRepo(tx, project.Name, project.Overview, project.Url); err != nil {
+				log.Printf("[trending] save daily, insert repo error: %s\n", err)
+				ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
+				return
+			}
+
+			id, err = model.TxSelectRepoIDByName(tx, project.Name)
+			if err != nil {
+				log.Printf("[trending] save daily, select repo id error: %s\n", err)
+				ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
+				return
+			}
 		}
 
 		if err := model.TxInsertDailyTrending(tx, req.Date, id, project.Star, project.TodayStar, project.Fork); err != nil {
@@ -78,5 +94,12 @@ func (c *Controller) saveDaily(ctx *gin.Context) {
 			return
 		}
 	}
+
+	if err := tx.Commit(); err != nil {
+		log.Printf("[trending] save daily, tx commit error: %s\n", err)
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": http.StatusBadGateway})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusOK})
 }

@@ -48,7 +48,7 @@ var (
 			today_star 		INT NOT NULL,
 			fork			INT NOT NULL
 		);`, schemaName, dailyTableName),
-		fmt.Sprintf(`CREATE INDEX idx_daily ON %s.%s USING BRIN (date);`, schemaName, dailyTableName),
+		fmt.Sprintf(`CREATE INDEX IF NOT EXISTS idx_daily ON %s.%s USING BRIN (date);`, schemaName, dailyTableName),
 		fmt.Sprintf(`INSERT INTO %s.%s(date, repo_id, star, today_star, fork) VALUES($1, $2, $3, $4, $5)`, schemaName, dailyTableName),
 	}
 
@@ -122,7 +122,7 @@ func TxInsertRepo(tx *sql.Tx, name string, overview string, url string) error {
 }
 
 func TxInsertDailyTrending(tx *sql.Tx, date time.Time, repoID uint32, star int, todayStar int, fork int) error {
-	result, err := tx.Exec(repoSQLString[postgresDailyInsert], date, repoID, star, todayStar, fork)
+	result, err := tx.Exec(trendingSQLString[postgresDailyInsert], date, repoID, star, todayStar, fork)
 	if err != nil {
 		return err
 	}
