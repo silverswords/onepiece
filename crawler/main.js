@@ -19,7 +19,7 @@ puppeteer.launch({ headless: true }).then(async browser => {
     let result = await query(page, "daily")
 
     await browser.close()
-
+    console.log(result)
     post(result)
   } catch (err) {
     console.log(err)
@@ -51,22 +51,22 @@ async function query(page, dateRange) {
       page.$$eval(".Box-row > .f6 > span + a", item => item.map(e => e.text)),
       page.$$eval(".Box-row > .f6 > span + a + a", item => item.map(e => e.text)),
       page.$$eval(".Box-row > .f6 > .float-sm-right", item => item.map(e => e.innerHTML)),
-      page.$$eval(".Box-row", item => item.length),
+      page.$$eval(".Box-row", item => item),
     ])
   } catch (err) {
     console.log(err)
   }
 
-  for (let i = 0; i < origin.boxCount; i++) {
+  origin.boxCount.forEach((_, index) => {
     temp.push({
-      "name": origin.nameAndUrl[i].name.replace(/[ ]|[\r\n]/g, ""),
-      "url": origin.nameAndUrl[i].href.replace(/[ ]|[\r\n]/g, ""),
-      "overview": origin.overview[i].replace(/<[^>]+>|[\r\n]/g, "").trim(),
-      "star": +origin.star[i].replace(/[^\d.]/g, ""),
-      "todayStar": +origin.todayStar[i].replace(/<[^>]+>|[\r\n]|[^\d.]/g, ""),
-      "fork": +origin.fork[i].replace(/[^\d.]/g, ""),
+      "name": origin.nameAndUrl[index].name.replace(/[ ]|[\r\n]/g, ""),
+      "url": origin.nameAndUrl[index].href.replace(/[ ]|[\r\n]/g, ""),
+      "overview": origin.overview[index].replace(/<[^>]+>|[\r\n]/g, "").trim(),
+      "star": +origin.star[index].replace(/[^\d.]/g, ""),
+      "todayStar": +origin.todayStar[index].replace(/<[^>]+>|[\r\n]|[^\d.]/g, ""),
+      "fork": +origin.fork[index].replace(/[^\d.]/g, ""),
     })
-  }
+  })
 
   return {
     date: new Date(),
