@@ -19,7 +19,7 @@ puppeteer.launch({ headless: true }).then(async browser => {
     let result = await query(page, "daily")
 
     await browser.close()
-    console.log(result)
+
     post(result)
   } catch (err) {
     console.log(err)
@@ -40,7 +40,7 @@ async function post(data) {
 
 async function query(page, dateRange) {
   let origin = {}
-  let temp = []
+  let data = []
 
   try {
     await page.goto("https://github.com/trending/go?since=" + dateRange, { waitUntil: "load" });
@@ -58,7 +58,7 @@ async function query(page, dateRange) {
   }
 
   origin.boxCount.forEach((_, index) => {
-    temp.push({
+    data.push({
       "name": origin.nameAndUrl[index].name.replace(/[ ]|[\r\n]/g, ""),
       "url": origin.nameAndUrl[index].href.replace(/[ ]|[\r\n]/g, ""),
       "overview": origin.overview[index].replace(/<[^>]+>|[\r\n]/g, "").trim(),
@@ -70,6 +70,6 @@ async function query(page, dateRange) {
 
   return {
     date: new Date(),
-    [dateRange]: temp
+    [dateRange]: data
   }
 }
