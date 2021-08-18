@@ -29,6 +29,9 @@ puppeteer.launch({ headless: true }).then(async browser => {
 async function post(data) {
   try {
     const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+      },
       body: JSON.stringify(data),
       method: 'POST',
     })
@@ -70,6 +73,6 @@ async function query(page, dateRange) {
 
   return {
     date: new Date(),
-    [dateRange]: data
+    [dateRange]: data,
   }
 }
