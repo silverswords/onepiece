@@ -34,7 +34,7 @@ async function post(data) {
     })
     console.log(response.statusText)
   } catch (err) {
-    return err
+    console.log(err)
   }
 }
 
